@@ -188,4 +188,13 @@ public interface QueueDAO {
 		push(queueName, messageId, priority, postponeDurationInSeconds);
 		return true;
 	}
+
+	/**
+	 * Check if queue contains the message.
+	 * @param messageId
+	 * @return
+	 */
+	default boolean containsMessage(String queueName, String messageId) {
+		throw new UnsupportedOperationException("contains message is not supported by default. Check relevant queue implementation for more details.");
+	}
 }
