@@ -70,6 +70,7 @@ public class WorkflowResource {
         return workflowService.startWorkflow(request);
     }
 
+    // 入口
     @POST
     @Path("/{name}")
     @Produces({MediaType.TEXT_PLAIN})

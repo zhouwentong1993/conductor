@@ -55,6 +55,7 @@ import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.service.ExecutionLockService;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -66,6 +67,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,15 +97,15 @@ public class WorkflowExecutor {
 
     @Inject
     public WorkflowExecutor(
-        DeciderService deciderService,
-        MetadataDAO metadataDAO,
-        QueueDAO queueDAO,
-        MetadataMapperService metadataMapperService,
-        WorkflowStatusListener workflowStatusListener,
-        ExecutionDAOFacade executionDAOFacade,
-        Configuration config,
-        ExecutionLockService executionLockService,
-        ParametersUtils parametersUtils
+            DeciderService deciderService,
+            MetadataDAO metadataDAO,
+            QueueDAO queueDAO,
+            MetadataMapperService metadataMapperService,
+            WorkflowStatusListener workflowStatusListener,
+            ExecutionDAOFacade executionDAOFacade,
+            Configuration config,
+            ExecutionLockService executionLockService,
+            ParametersUtils parametersUtils
     ) {
         this.deciderService = deciderService;
         this.metadataDAO = metadataDAO;
@@ -445,15 +447,15 @@ public class WorkflowExecutor {
 
         // Get SIMPLE tasks in SCHEDULED state that have callbackAfterSeconds > 0 and set the callbackAfterSeconds to 0
         workflow.getTasks().stream()
-            .filter(task -> !isSystemTask.test(task)
-                && SCHEDULED.equals(task.getStatus())
-                && task.getCallbackAfterSeconds() > 0)
-            .forEach(task -> {
-                if (queueDAO.resetOffsetTime(QueueUtils.getQueueName(task), task.getTaskId())) {
-                    task.setCallbackAfterSeconds(0);
-                    executionDAOFacade.updateTask(task);
-                }
-            });
+                .filter(task -> !isSystemTask.test(task)
+                        && SCHEDULED.equals(task.getStatus())
+                        && task.getCallbackAfterSeconds() > 0)
+                .forEach(task -> {
+                    if (queueDAO.resetOffsetTime(QueueUtils.getQueueName(task), task.getTaskId())) {
+                        task.setCallbackAfterSeconds(0);
+                        executionDAOFacade.updateTask(task);
+                    }
+                });
     }
 
     public String rerun(RerunWorkflowRequest request) {
@@ -550,7 +552,7 @@ public class WorkflowExecutor {
                     break;
                 case CANCELED:
                     if (task.getTaskType().equalsIgnoreCase(TaskType.JOIN.toString()) ||
-                        task.getTaskType().equalsIgnoreCase(TaskType.DO_WHILE.toString())) {
+                            task.getTaskType().equalsIgnoreCase(TaskType.DO_WHILE.toString())) {
                         task.setStatus(IN_PROGRESS);
                         // Task doesn't have to be updated yet. Will be updated along with other Workflow tasks downstream.
                     } else {
@@ -614,7 +616,7 @@ public class WorkflowExecutor {
 
         // perform parameter replacement for retried task
         Map<String, Object> taskInput = parametersUtils.getTaskInput(taskToBeRetried.getWorkflowTask().getInputParameters(),
-            workflow, taskToBeRetried.getWorkflowTask().getTaskDefinition(), taskToBeRetried.getTaskId());
+                workflow, taskToBeRetried.getWorkflowTask().getTaskDefinition(), taskToBeRetried.getTaskId());
         taskToBeRetried.getInputData().putAll(taskInput);
 
         task.setRetried(true);
@@ -730,8 +732,8 @@ public class WorkflowExecutor {
                             workflowSystemTask.cancel(workflow, task, this);
                         } catch (Exception e) {
                             throw new ApplicationException(Code.INTERNAL_ERROR,
-                                String.format("Error canceling system task: %s/%s", workflowSystemTask.getName(),
-                                    task.getTaskId()), e);
+                                    String.format("Error canceling system task: %s/%s", workflowSystemTask.getName(),
+                                            task.getTaskId()), e);
                         }
                     }
                     executionDAOFacade.updateTask(task);
@@ -969,6 +971,7 @@ public class WorkflowExecutor {
         // This code will be removed in a future version.
         workflow = metadataMapperService.populateWorkflowWithDefinitions(workflow);
 
+        // 判断是否为终止状态
         if (workflow.getStatus().isTerminal()) {
             return true;
         }
@@ -1001,7 +1004,7 @@ public class WorkflowExecutor {
                             } else {
                                 workflow.setStatus(workflowInstance.getStatus());
                                 terminate(workflow, new TerminateWorkflowException(
-                                    "Workflow is FAILED by TERMINATE task: " + task.getTaskId()));
+                                        "Workflow is FAILED by TERMINATE task: " + task.getTaskId()));
                             }
                             return true;
                         }
@@ -1244,7 +1247,7 @@ public class WorkflowExecutor {
 
             updateTask(new TaskResult(task));
             LOGGER.debug("Done Executing {}/{}-{} output={}", task.getTaskType(), task.getTaskId(), task.getStatus(),
-                task.getOutputData().toString());
+                    task.getOutputData().toString());
 
         } catch (Exception e) {
             Monitors.error(className, "executeSystemTask");
@@ -1286,8 +1289,8 @@ public class WorkflowExecutor {
      * The domain list must be ordered.
      * In sequence, check if any worker has polled for last `activeWorkerLastPollInSecs` seconds, if so that is the Active domain.
      * When no active domains are found:
-     *   <li> If NO_DOMAIN token is provided, return null.
-     *   <li> Else, return last domain from list.
+     * <li> If NO_DOMAIN token is provided, return null.
+     * <li> Else, return last domain from list.
      *
      * @param taskType the taskType of the task for which active domain is to be found
      * @param domains  the array of domains for the task. (Must contain atleast one element).
@@ -1564,6 +1567,7 @@ public class WorkflowExecutor {
     /**
      * Update parent Workflow based on Subworkflow state.
      * Updates the provided subWorkflowTask and/or parentWorkflow inplace, where applicable.
+     *
      * @param subWorkflowTask
      * @param subWorkflow
      * @param parentWorkflow
@@ -1615,7 +1619,7 @@ public class WorkflowExecutor {
             } else if (parentWorkflow.getStatus().equals(WorkflowStatus.RUNNING)) {
                 if (subWorkflowTask.getStatus().isTerminal()) {
                     String errorMsg = String.format("Subworkflow: %s is in RUNNING state, but Subworkflow task: %s in parent workflow: %s is in FAILED state.",
-                            subWorkflow.getWorkflowId(),subWorkflowTask.getTaskId(), parentWorkflow.getWorkflowId());
+                            subWorkflow.getWorkflowId(), subWorkflowTask.getTaskId(), parentWorkflow.getWorkflowId());
                     LOGGER.warn(errorMsg);
                     throw new IllegalStateException(errorMsg);
                 } else {

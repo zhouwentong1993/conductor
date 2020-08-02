@@ -61,7 +61,7 @@ public class MetadataMapperService {
                 version == null ? lookupLatestWorkflowDefinition(name) : lookupWorkflowDefinition(name, version);
 
         //Check if the workflow definition is valid
-        WorkflowDef workflowDefinition = potentialDef
+        return potentialDef
                 .orElseThrow(() -> {
                             logger.error("There is no workflow defined with name {} and version {}", name, version);
                             return new ApplicationException(
@@ -70,7 +70,6 @@ public class MetadataMapperService {
                             );
                         }
                 );
-        return workflowDefinition;
     }
 
     @VisibleForTesting

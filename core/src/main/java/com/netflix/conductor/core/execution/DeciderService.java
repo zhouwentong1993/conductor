@@ -98,6 +98,7 @@ public class DeciderService {
         // Filter the list of tasks and include only tasks that are not executed,
         // not marked to be skipped and not ready for rerun.
         // For a new workflow, the list of unprocessedTasks will be empty
+        // 获取所有没有执行的任务
         List<Task> unprocessedTasks = tasks.stream()
                 .filter(t -> !t.getStatus().equals(SKIPPED) && !t.isExecuted())
                 .collect(Collectors.toList());
