@@ -201,6 +201,7 @@ public class ExecutionDAOFacade {
         // 将传入的 workflow 持久化到 Redis 中
         queueDAO.push(DECIDER_QUEUE, workflow.getWorkflowId(), workflow.getPriority(), config.getSweepFrequency());
         // 问题：ES 在这里起到了什么作用？
+        // ES 在整体起到搜索的作用
         if(config.enableAsyncIndexing()) {
             indexDAO.asyncIndexWorkflow(workflow);
         } else {

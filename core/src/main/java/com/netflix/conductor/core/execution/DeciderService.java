@@ -98,7 +98,7 @@ public class DeciderService {
         // Filter the list of tasks and include only tasks that are not executed,
         // not marked to be skipped and not ready for rerun.
         // For a new workflow, the list of unprocessedTasks will be empty
-        // 获取所有没有执行的任务
+        // 获取所有没有执行的任务，如果是新的 workflow，那么未执行的一定是空的，因为在初始化的时候，压根儿就没有放 Tasks
         List<Task> unprocessedTasks = tasks.stream()
                 .filter(t -> !t.getStatus().equals(SKIPPED) && !t.isExecuted())
                 .collect(Collectors.toList());
@@ -149,9 +149,7 @@ public class DeciderService {
 
         Map<String, Task> tasksToBeScheduled = new LinkedHashMap<>();
 
-        preScheduledTasks.forEach(preScheduledTask -> {
-            tasksToBeScheduled.put(preScheduledTask.getReferenceTaskName(), preScheduledTask);
-        });
+        preScheduledTasks.forEach(preScheduledTask -> tasksToBeScheduled.put(preScheduledTask.getReferenceTaskName(), preScheduledTask));
 
         // A new workflow does not enter this code branch
         for (Task pendingTask : pendingTasks) {
@@ -244,22 +242,26 @@ public class DeciderService {
             .collect(Collectors.toList());
     }
 
+    // 开始一个 workflow
     private List<Task> startWorkflow(Workflow workflow) throws TerminateWorkflowException {
         final WorkflowDef workflowDef = workflow.getWorkflowDefinition();
 
-        LOGGER.debug("Starting workflow: {}", workflow);
+        LOGGER.error("Starting workflow: {}", workflow);
 
         //The tasks will be empty in case of new workflow
         List<Task> tasks = workflow.getTasks();
         // Check if the workflow is a re-run case or if it is a new workflow execution
         if (workflow.getReRunFromWorkflowId() == null || tasks.isEmpty()) {
 
+            // workflow 定义得不对，一个 workflow 必须包含至少一个 Task
             if (workflowDef.getTasks().isEmpty()) {
                 throw new TerminateWorkflowException("No tasks found to be executed", WorkflowStatus.COMPLETED);
             }
 
+            // 从第一个任务开始调度
             WorkflowTask taskToSchedule = workflowDef.getTasks().get(0); //Nothing is running yet - so schedule the first task
             //Loop until a non-skipped task is found
+            // 找到第一个不被调过的任务
             while (isTaskSkipped(taskToSchedule, workflow)) {
                 taskToSchedule = workflowDef.getNextTask(taskToSchedule.getTaskReferenceName());
             }
@@ -649,6 +651,7 @@ public class DeciderService {
         Map<String, Object> input = parametersUtils.getTaskInput(taskToSchedule.getInputParameters(),
                 workflow, null, null);
 
+        // 判断任务类型
         TaskType taskType = TaskType.USER_DEFINED;
         String type = taskToSchedule.getType();
         if (TaskType.isSystemTask(type)) {
@@ -662,6 +665,7 @@ public class DeciderService {
                 .collect(Collectors.toList());
 
         String taskId = IDGenerator.generate();
+        // 这个也是个核心数据结构
         TaskMapperContext taskMapperContext = TaskMapperContext.newBuilder()
                 .withWorkflowDefinition(workflow.getWorkflowDefinition())
                 .withWorkflowInstance(workflow)

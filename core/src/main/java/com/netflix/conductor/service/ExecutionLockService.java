@@ -58,6 +58,7 @@ public class ExecutionLockService {
     }
 
     public boolean acquireLock(String lockId, long timeToTryMs, long leaseTimeMs) {
+        // 是否在 workflow 设计锁，锁能起到什么作用
         if (config.enableWorkflowExecutionLock()) {
             Lock lock = lockProvider.get();
             if (!lock.acquireLock(lockId, timeToTryMs, leaseTimeMs, TimeUnit.MILLISECONDS)) {

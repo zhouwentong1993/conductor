@@ -254,10 +254,9 @@ public class ParametersUtils {
             return input;
         }
         Map<String, Object> workflowInput = workflow.getInput();
-        inputParams.entrySet().forEach(e -> {
+        inputParams.forEach((paramName, value) -> {
 
-            String paramName = e.getKey();
-            String paramPath = "" + e.getValue();
+            String paramPath = "" + value;
             String[] paramPathComponents = paramPath.split("\\.");
             Preconditions.checkArgument(paramPathComponents.length == 3, "Invalid input expression for " + paramName + ", paramPathComponents.size=" + paramPathComponents.length + ", expression=" + paramPath);
 

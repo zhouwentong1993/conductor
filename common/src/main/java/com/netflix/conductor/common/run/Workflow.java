@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @ProtoMessage
+// workflow 是一个充血模型
 public class Workflow extends Auditable{
 
     @ProtoEnum

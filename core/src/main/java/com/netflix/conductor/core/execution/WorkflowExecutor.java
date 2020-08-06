@@ -396,6 +396,7 @@ public class WorkflowExecutor {
         }
 
         try {
+            // 持久化 workflow 运行数据
             executionDAOFacade.createWorkflow(workflow);
             LOGGER.debug("A new instance of workflow: {} created with id: {}", workflow.getWorkflowName(), workflowId);
             //then decide to see if anything needs to be done as part of the workflow
@@ -959,7 +960,9 @@ public class WorkflowExecutor {
      * @return true if the workflow has completed (success or failed), false otherwise.
      * @throws ApplicationException If there was an error - caller should retry in this case.
      */
+    // 开始处理一个 workflow 的地方
     public boolean decide(String workflowId) {
+        // 获取锁
         if (!executionLockService.acquireLock(workflowId)) {
             return false;
         }
@@ -976,6 +979,7 @@ public class WorkflowExecutor {
             return true;
         }
 
+        // todo 看到这里了
         try {
             DeciderService.DeciderOutcome outcome = deciderService.decide(workflow);
             if (outcome.isComplete) {
