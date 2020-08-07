@@ -129,10 +129,12 @@ public class ModulesProvider implements Provider<List<AbstractModule>> {
                 break;
         }
 
-        if (configuration.isIndexingPersistenceEnabled())
+        // 配置 index 服务
+        if (configuration.isIndexingPersistenceEnabled()) {
             modules.add(new ElasticSearchModule());
-        else
+        } else {
             modules.add(new NoopIndexModule());
+        }
 
         modules.add(new WorkflowExecutorModule());
 

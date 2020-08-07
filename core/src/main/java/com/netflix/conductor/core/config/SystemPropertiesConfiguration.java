@@ -150,6 +150,7 @@ public class SystemPropertiesConfiguration implements Configuration {
         return getLongProperty("conductor.task.output.payload.threshold.kb", 3072L);
     }
 
+    @Override
     public Long getMaxTaskOutputPayloadSizeThresholdKB() {
         return getLongProperty("conductor.max.task.output.payload.threshold.kb", 10240L);
     }
