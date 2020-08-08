@@ -124,6 +124,7 @@ public class DeciderService {
             return outcome;
         }
 
+        // 检验 workflow 是否超时，问题：workflow 超时时间包括什么？任务调度时间算吗？
         checkWorkflowTimeout(workflow);
 
         if (workflow.getStatus().equals(WorkflowStatus.PAUSED)) {
@@ -242,7 +243,7 @@ public class DeciderService {
             .collect(Collectors.toList());
     }
 
-    // 开始一个 workflow
+    // 开始一个 workflow，返回具体类型的 Task，比如 DecisionTask
     private List<Task> startWorkflow(Workflow workflow) throws TerminateWorkflowException {
         final WorkflowDef workflowDef = workflow.getWorkflowDefinition();
 
@@ -261,11 +262,12 @@ public class DeciderService {
             // 从第一个任务开始调度
             WorkflowTask taskToSchedule = workflowDef.getTasks().get(0); //Nothing is running yet - so schedule the first task
             //Loop until a non-skipped task is found
-            // 找到第一个不被调过的任务
+            // 找到第一个不跳过的任务
             while (isTaskSkipped(taskToSchedule, workflow)) {
                 taskToSchedule = workflowDef.getNextTask(taskToSchedule.getTaskReferenceName());
             }
 
+            // FIXME 既然找到了，为什么还要调用下面的方法呢？
             //In case of a new workflow, the first non-skippable task will be scheduled
             return getTasksToBeScheduled(workflow, taskToSchedule, 0);
         }
@@ -681,6 +683,7 @@ public class DeciderService {
         // for static forks, each branch of the fork creates a join task upon completion
         // for dynamic forks, a join task is created with the fork and also with each branch of the fork
         // a new task must only be scheduled if a task with the same reference name is not already in this workflow instance
+        // 映射成更为具体的任务，比如 decisionTask 这种
         List<Task> tasks = taskMappers.get(taskType.name()).getMappedTasks(taskMapperContext).stream()
                 .filter(task -> !tasksInWorkflow.contains(task.getReferenceTaskName()))
                 .collect(Collectors.toList());

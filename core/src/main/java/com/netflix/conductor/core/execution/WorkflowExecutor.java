@@ -638,11 +638,13 @@ public class WorkflowExecutor {
      * @param wf the workflow to be completed
      * @throws ApplicationException if workflow is not in terminal state
      */
+    // 标识该 workflow 完成
     @VisibleForTesting
     void completeWorkflow(Workflow wf) {
         LOGGER.debug("Completing workflow execution for {}", wf.getWorkflowId());
         Workflow workflow = executionDAOFacade.getWorkflowById(wf.getWorkflowId(), false);
 
+        // 真是完成了，从 DECIDER_QUEUE 队列移除即可，该队列在添加任务时出现。
         if (workflow.getStatus().equals(WorkflowStatus.COMPLETED)) {
             queueDAO.remove(DECIDER_QUEUE, workflow.getWorkflowId());    //remove from the sweep queue
             executionDAOFacade.removeFromPendingWorkflow(workflow.getWorkflowName(), workflow.getWorkflowId());
@@ -995,9 +997,12 @@ public class WorkflowExecutor {
             tasksToBeScheduled = dedupAndAddTasks(workflow, tasksToBeScheduled);
 
             for (Task task : outcome.tasksToBeScheduled) {
+                // 如果是系统任务 && 没有停止
                 if (isSystemTask.and(isNonTerminalTask).test(task)) {
                     WorkflowSystemTask workflowSystemTask = WorkflowSystemTask.get(task.getTaskType());
                     Workflow workflowInstance = deciderService.populateWorkflowAndTaskData(workflow);
+                    // HTTP、Kafka、Event 和 SubWorkflow 这几个是异步的，其他的都是同步的
+                    // 非异步 && 执行的 Task 的状态转变了
                     if (!workflowSystemTask.isAsync() && workflowSystemTask.execute(workflowInstance, task, this)) {
                         // FIXME: temporary hack to workaround TERMINATE task
                         if (TERMINATE.name().equals(task.getTaskType())) {
@@ -1023,11 +1028,13 @@ public class WorkflowExecutor {
                 for (Task task : tasksToBeUpdated) {
                     if (task.getStatus() != null && (!task.getStatus().equals(Task.Status.IN_PROGRESS)
                             || !task.getStatus().equals(Task.Status.SCHEDULED))) {
+                        // Task 完成，删除任务
                         queueDAO.remove(QueueUtils.getQueueName(task), task.getTaskId());
                     }
                 }
             }
 
+            // 上面是对存储数据的操作，现在是对 Workflow 对象的操作
             if (!outcome.tasksToBeUpdated.isEmpty() || !tasksToBeScheduled.isEmpty()) {
                 executionDAOFacade.updateTasks(tasksToBeUpdated);
                 executionDAOFacade.updateWorkflow(workflow);
@@ -1326,6 +1333,7 @@ public class WorkflowExecutor {
     }
 
     @VisibleForTesting
+    // TODO 看到这里了1
     boolean scheduleTask(Workflow workflow, List<Task> tasks) {
         List<Task> createdTasks;
 

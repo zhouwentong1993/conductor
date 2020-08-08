@@ -122,9 +122,13 @@ public class MySQLExecutionDAO extends MySQLBaseDAO implements ExecutionDAO, Rat
                     continue;
                 }
 
+                // Task 实例数据
                 insertOrUpdateTaskData(connection, task);
+                // 与 Workflow 建立连接关系
                 addWorkflowToTaskMapping(connection, task);
+                // 任务标识为正在进行中
                 addTaskInProgress(connection, task);
+                //
                 updateTask(connection, task);
 
                 created.add(task);
