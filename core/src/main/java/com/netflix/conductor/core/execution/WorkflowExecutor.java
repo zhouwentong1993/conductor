@@ -996,6 +996,7 @@ public class WorkflowExecutor {
 
             tasksToBeScheduled = dedupAndAddTasks(workflow, tasksToBeScheduled);
 
+            // FIXME，新创建的 Workflow 的 tasksToBeScheduled 有几个？？
             for (Task task : outcome.tasksToBeScheduled) {
                 // 如果是系统任务 && 没有停止
                 if (isSystemTask.and(isNonTerminalTask).test(task)) {
@@ -1005,6 +1006,7 @@ public class WorkflowExecutor {
                     // 非异步 && 执行的 Task 的状态转变了
                     if (!workflowSystemTask.isAsync() && workflowSystemTask.execute(workflowInstance, task, this)) {
                         // FIXME: temporary hack to workaround TERMINATE task
+                        // 对 Terminate 任务的特殊处理，直接标识 Task 完成。
                         if (TERMINATE.name().equals(task.getTaskType())) {
                             deciderService.externalizeTaskData(task);
                             executionDAOFacade.updateTask(task);
@@ -1040,8 +1042,10 @@ public class WorkflowExecutor {
                 executionDAOFacade.updateWorkflow(workflow);
             }
 
+            // 在这里就是相当于把整个任务都要搞完，
             stateChanged = scheduleTask(workflow, tasksToBeScheduled) || stateChanged;
 
+            // 如果没有搞完，再递归去搞
             if (stateChanged) {
                 decide(workflowId);
             }

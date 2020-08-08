@@ -196,9 +196,9 @@ public class ExecutionDAOFacade {
     // 持久化 workflow
     public String createWorkflow(Workflow workflow) {
         workflow.setCreateTime(System.currentTimeMillis());
+        // 将传入的 workflow 持久化到 Redis 中
         executionDAO.createWorkflow(workflow);
         // Add to decider queue
-        // 将传入的 workflow 持久化到 Redis 中
         queueDAO.push(DECIDER_QUEUE, workflow.getWorkflowId(), workflow.getPriority(), config.getSweepFrequency());
         // 问题：ES 在这里起到了什么作用？
         // ES 在整体起到搜索的作用
