@@ -115,6 +115,7 @@ public class RedisExecutionDAO extends BaseDynoDAO implements ExecutionDAO {
 		return tasks;
 	}
 
+	// 将 Task 持久化到存储里，做了跟 Workflow 的关联。
 	@Override
 	public List<Task> createTasks(List<Task> tasks) {
 
@@ -136,6 +137,7 @@ public class RedisExecutionDAO extends BaseDynoDAO implements ExecutionDAO {
 				task.setScheduledTime(System.currentTimeMillis());
 			}
 
+			// 创建关联关系，Workflow 和 Task
 			correlateTaskToWorkflowInDS(task.getTaskId(), task.getWorkflowInstanceId());
 			logger.debug("Scheduled task added to WORKFLOW_TO_TASKS workflowId: {}, taskId: {}, taskType: {} during createTasks",
                     task.getWorkflowInstanceId(), task.getTaskId(), task.getTaskType());
@@ -154,12 +156,14 @@ public class RedisExecutionDAO extends BaseDynoDAO implements ExecutionDAO {
 	}
 
 	@Override
+	// Task 一有更新，就会调用到这里，通过 Redis 的数据变化来维护 task 的持久化状态
 	public void updateTask(Task task) {
 		Optional<TaskDef> taskDefinition = task.getTaskDefinition();
 
 		if(taskDefinition.isPresent() && taskDefinition.get().concurrencyLimit() > 0) {
 
 			if(task.getStatus() != null && task.getStatus().equals(Status.IN_PROGRESS)) {
+				// 这一步不是跟上面那一步重复了吗？？？
 				dynoClient.sadd(nsKey(TASKS_IN_PROGRESS_STATUS, task.getTaskDefName()), task.getTaskId());
 				logger.debug("Workflow Task added to TASKS_IN_PROGRESS_STATUS with tasksInProgressKey: {}, workflowId: {}, taskId: {}, taskType: {}, taskStatus: {} during updateTask",
 						nsKey(TASKS_IN_PROGRESS_STATUS, task.getTaskDefName(), task.getTaskId()), task.getWorkflowInstanceId(), task.getTaskId(), task.getTaskType(), task.getStatus().name());
@@ -190,6 +194,7 @@ public class RedisExecutionDAO extends BaseDynoDAO implements ExecutionDAO {
 		}
 
         Set<String> taskIds = dynoClient.smembers(nsKey(WORKFLOW_TO_TASKS, task.getWorkflowInstanceId()));
+		// 为啥还要再补一下
 		if (!taskIds.contains(task.getTaskId())) {
 		    correlateTaskToWorkflowInDS(task.getTaskId(), task.getWorkflowInstanceId());
         }

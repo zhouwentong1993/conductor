@@ -89,6 +89,7 @@ public class HttpTask extends WorkflowSystemTask {
 		logger.info("HttpTask initialized...");
 	}
 
+	// 发起 HTTP 调用，将结果回填到 task 中
 	@Override
 	public void start(Workflow workflow, Task task, WorkflowExecutor executor) {
 		Object request = task.getInputData().get(requestParameter);

@@ -61,8 +61,8 @@ public class BaseDynoDAO {
         if (StringUtils.isNotBlank(domain)) {
             namespacedKey.append(domain).append(NAMESPACE_SEP);
         }
-        for (int i = 0; i < nsValues.length; i++) {
-            namespacedKey.append(nsValues[i]).append(NAMESPACE_SEP);
+        for (String nsValue : nsValues) {
+            namespacedKey.append(nsValue).append(NAMESPACE_SEP);
         }
         return StringUtils.removeEnd(namespacedKey.toString(), NAMESPACE_SEP);
     }

@@ -129,8 +129,7 @@ public class DynoProxy {
     }
 
     public Long hset(String key, String field, String value) {
-        Long retVal = dynoClient.hset(key, field, value);
-        return retVal;
+        return dynoClient.hset(key, field, value);
     }
 
     public Long hsetnx(String key, String field, String value) {
@@ -220,14 +219,12 @@ public class DynoProxy {
 
     public Long sadd(String key, String value) {
         logger.trace("sadd {} {}", key, value);
-        Long retVal = dynoClient.sadd(key, value);
-        return retVal;
+        return dynoClient.sadd(key, value);
     }
 
     public Long srem(String key, String member) {
         logger.trace("srem {} {}", key, member);
-        Long retVal = dynoClient.srem(key, member);
-        return retVal;
+        return dynoClient.srem(key, member);
     }
 
     public boolean sismember(String key, String member) {

@@ -1042,7 +1042,8 @@ public class WorkflowExecutor {
                 executionDAOFacade.updateWorkflow(workflow);
             }
 
-            // 在这里就是相当于把整个任务都要搞完，
+            // 在这里就是相当于把整个任务都要搞完
+            // 直到所有的任务都被调度了，就不再递归了
             stateChanged = scheduleTask(workflow, tasksToBeScheduled) || stateChanged;
 
             // 如果没有搞完，再递归去搞
@@ -1361,6 +1362,7 @@ public class WorkflowExecutor {
             // Save the tasks in the DAO
             createdTasks = executionDAOFacade.createTasks(tasks);
 
+            // 过滤出系统任务
             List<Task> systemTasks = createdTasks.stream()
                     .filter(isSystemTask)
                     .collect(Collectors.toList());
@@ -1396,6 +1398,8 @@ public class WorkflowExecutor {
                 }
             }
 
+            // FIXME 对待异步的处理方式，当一个 Task 是异步的时候，我们无法立即获取它的执行状态
+            // FIXME 将其放入一个队列里面去，后续怎么处理？
             addTaskToQueue(tasksToBeQueued);
             return startedSystemTasks;
         } catch (Exception e) {
