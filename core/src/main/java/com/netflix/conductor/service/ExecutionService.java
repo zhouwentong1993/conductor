@@ -151,6 +151,7 @@ public class ExecutionService {
 
 				task.setStatus(Status.IN_PROGRESS);
 				if (task.getStartTime() == 0) {
+					// 任务开始时间是从被 server 拿出来之后开始计时的。
 					task.setStartTime(System.currentTimeMillis());
 					Monitors.recordQueueWaitTime(task.getTaskDefName(), task.getQueueWaitTime());
 				}
@@ -178,6 +179,7 @@ public class ExecutionService {
 			return null;
 		}
 		Task task = tasks.get(0);
+		// FIXME 为什么这里要做一次 ACK，任务还没有发送给客户端，不应该做 ACK 啊
 		ackTaskReceived(task);
 		logger.debug("The Task {} being returned for /tasks/poll/{}?{}&{}", task, taskType, workerId, domain);
 		return task;

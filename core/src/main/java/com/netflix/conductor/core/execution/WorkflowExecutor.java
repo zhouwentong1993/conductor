@@ -1169,8 +1169,12 @@ public class WorkflowExecutor {
         return executionDAOFacade.getWorkflowById(workflowId, includeTasks);
     }
 
+    // 将异步任务放入队列中
     public void addTaskToQueue(Task task) {
         // put in queue
+        // 放入队列的包括自定义任务吗？
+        // FIXME，debug 看看这里面的任务有自定义任务吗？
+        // 放入的任务有系统任务中的异步任务，也有非系统任务。系统任务会由系统去通过定时任务拉取，非系统任务由 worker 触发，拉取任务。
         String taskQueueName = QueueUtils.getQueueName(task);
         if (task.getCallbackAfterSeconds() > 0) {
             queueDAO.push(taskQueueName, task.getTaskId(), task.getWorkflowPriority(), task.getCallbackAfterSeconds());

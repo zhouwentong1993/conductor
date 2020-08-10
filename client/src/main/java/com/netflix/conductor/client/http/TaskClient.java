@@ -267,6 +267,7 @@ public class TaskClient extends ClientBase {
      * @param workerId user identified worker.
      * @return true if the task was found with the given ID and acknowledged. False otherwise. If the server returns false, the client should NOT attempt to ack again.
      */
+    // ACK 需要显式调用吗？
     public Boolean ack(String taskId, String workerId) {
         Preconditions.checkArgument(StringUtils.isNotBlank(taskId), "Task id cannot be blank");
 

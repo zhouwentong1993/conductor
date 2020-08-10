@@ -68,6 +68,7 @@ public class TaskServiceImpl implements TaskService {
      * @param domain   Domain of the workflow
      * @return polled {@link Task}
      */
+    // 客户端拉取任务
     @Service
     public Task poll(String taskType, String workerId, String domain) {
         LOGGER.debug("Task being polled: /tasks/poll/{}?{}&{}", taskType, workerId, domain);

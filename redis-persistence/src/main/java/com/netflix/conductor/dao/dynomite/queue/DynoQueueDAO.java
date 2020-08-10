@@ -214,9 +214,9 @@ public class DynoQueueDAO implements QueueDAO {
     }
 
     @Override
+    // 通过 ACK 机制，完成任务的闭环，将任务从 server 删除掉。
     public boolean ack(String queueName, String messageId) {
         return queues.get(queueName).ack(messageId);
-
     }
 
     @Override
