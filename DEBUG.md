@@ -1,5 +1,5 @@
 调试步骤
-1. 启动 Server 服务
+1. 启动 Server 服务，注意：要在 run configuration 里面加上你的配置文件的路径，否则走默认配置，Redis 都是走的 memory
 2. 创建 task 和 Workflow，脚本如下：
 <br>创建 task
  ```shell script

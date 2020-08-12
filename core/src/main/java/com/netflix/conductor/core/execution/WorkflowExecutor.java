@@ -1389,6 +1389,7 @@ public class WorkflowExecutor {
                 if (!workflowSystemTask.isAsync()) {
                     try {
                         deciderService.populateTaskData(task);
+                        // 开始执行 workflow
                         workflowSystemTask.start(workflow, task, this);
                     } catch (Exception e) {
                         String errorMsg = String.format("Unable to start system task: %s, {id: %s, name: %s}", task.getTaskType(), task.getTaskId(), task.getTaskDefName());
